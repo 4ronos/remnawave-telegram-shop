@@ -93,16 +93,14 @@ func (h Handler) StartCommandHandler(ctx context.Context, b *bot.Bot, update *mo
 	}
 
 	_, err = b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:    update.Message.Chat.ID,
-		ParseMode: models.ParseModeHTML,
-		ReplyMarkup: models.InlineKeyboardMarkup{
-			InlineKeyboard: inlineKeyboard,
-		},
-		Text: h.translation.GetText(langCode, "greeting"),
+    	ChatID:    update.Message.Chat.ID,
+    	ParseMode: models.ParseModeHTML,
+    	ReplyMarkup: models.InlineKeyboardMarkup{
+        	InlineKeyboard: inlineKeyboard,
+    	},
+    	Text: h.translation.GetText(langCode, "greeting") + formatSubscriptionInfo(existingCustomer, langCode, h.translation),
 	})
-	if err != nil {
-		slog.Error("Error sending /start message", err)
-	}
+
 }
 
 func (h Handler) StartCallbackHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
@@ -121,17 +119,15 @@ func (h Handler) StartCallbackHandler(ctx context.Context, b *bot.Bot, update *m
 	inlineKeyboard := h.buildStartKeyboard(existingCustomer, langCode)
 
 	_, err = b.EditMessageText(ctxWithTime, &bot.EditMessageTextParams{
-		ChatID:    callback.Message.Message.Chat.ID,
-		MessageID: callback.Message.Message.ID,
-		ParseMode: models.ParseModeHTML,
-		ReplyMarkup: models.InlineKeyboardMarkup{
-			InlineKeyboard: inlineKeyboard,
-		},
-		Text: h.translation.GetText(langCode, "greeting"),
+    	ChatID:    callback.Message.Message.Chat.ID,
+    	MessageID: callback.Message.Message.ID,
+    	ParseMode: models.ParseModeHTML,
+    	ReplyMarkup: models.InlineKeyboardMarkup{
+        	InlineKeyboard: inlineKeyboard,
+    	},
+    	Text: h.translation.GetText(langCode, "greeting") + formatSubscriptionInfo(existingCustomer, langCode, h.translation),
 	})
-	if err != nil {
-		slog.Error("Error sending /start message", err)
-	}
+
 }
 
 func (h Handler) resolveConnectButton(lang string) []models.InlineKeyboardButton {
