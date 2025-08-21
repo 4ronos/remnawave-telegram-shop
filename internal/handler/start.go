@@ -15,14 +15,14 @@ import (
 	"remnawave-tg-shop-bot/utils"
 )
 
-// helper для форматирования даты окончания подписки
+// helper для вывода даты окончания подписки
 func formatSubscriptionInfo(customer *database.Customer, lang string, t *Translation) string {
-    if customer.SubscriptionLink != nil && customer.ExpireAt.After(time.Now()) {
-        return "\n\n📅 " + t.GetText(lang, "subscription_active_until") + ": " + customer.ExpireAt.Format("02.01.2006")
-    }
-    return ""
+	if customer.SubscriptionLink != nil && customer.ExpireAt.After(time.Now()) {
+		// можно добавить ключ в translations.json: "subscription_active_until": "Ваша подписка активна до"
+		return "\n\n📅 " + t.GetText(lang, "subscription_active_until") + ": " + customer.ExpireAt.Format("02.01.2006")
+	}
+	return ""
 }
-
 
 func (h Handler) StartCommandHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	ctxWithTime, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -102,14 +102,16 @@ func (h Handler) StartCommandHandler(ctx context.Context, b *bot.Bot, update *mo
 	}
 
 	_, err = b.SendMessage(ctx, &bot.SendMessageParams{
-    	ChatID:    update.Message.Chat.ID,
-    	ParseMode: models.ParseModeHTML,
-    	ReplyMarkup: models.InlineKeyboardMarkup{
-        	InlineKeyboard: inlineKeyboard,
-    	},
-    	Text: h.translation.GetText(langCode, "greeting") + formatSubscriptionInfo(existingCustomer, langCode, h.translation),
+		ChatID:    update.Message.Chat.ID,
+		ParseMode: models.ParseModeHTML,
+		ReplyMarkup: models.InlineKeyboardMarkup{
+			InlineKeyboard: inlineKeyboard,
+		},
+		Text: h.translation.GetText(langCode, "greeting") + formatSubscriptionInfo(existingCustomer, langCode, h.translation),
 	})
-
+	if err != nil {
+		slog.Error("Error sending /start message", err)
+	}
 }
 
 func (h Handler) StartCallbackHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
@@ -128,15 +130,17 @@ func (h Handler) StartCallbackHandler(ctx context.Context, b *bot.Bot, update *m
 	inlineKeyboard := h.buildStartKeyboard(existingCustomer, langCode)
 
 	_, err = b.EditMessageText(ctxWithTime, &bot.EditMessageTextParams{
-    	ChatID:    callback.Message.Message.Chat.ID,
-    	MessageID: callback.Message.Message.ID,
-    	ParseMode: models.ParseModeHTML,
-    	ReplyMarkup: models.InlineKeyboardMarkup{
-        	InlineKeyboard: inlineKeyboard,
-    	},
-    	Text: h.translation.GetText(langCode, "greeting") + formatSubscriptionInfo(existingCustomer, langCode, h.translation),
+		ChatID:    callback.Message.Message.Chat.ID,
+		MessageID: callback.Message.Message.ID,
+		ParseMode: models.ParseModeHTML,
+		ReplyMarkup: models.InlineKeyboardMarkup{
+			InlineKeyboard: inlineKeyboard,
+		},
+		Text: h.translation.GetText(langCode, "greeting") + formatSubscriptionInfo(existingCustomer, langCode, h.translation),
 	})
-
+	if err != nil {
+		slog.Error("Error sending /start message", err)
+	}
 }
 
 func (h Handler) resolveConnectButton(lang string) []models.InlineKeyboardButton {
