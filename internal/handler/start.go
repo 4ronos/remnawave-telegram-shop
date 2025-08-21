@@ -15,6 +15,15 @@ import (
 	"remnawave-tg-shop-bot/utils"
 )
 
+// helper для форматирования даты окончания подписки
+func formatSubscriptionInfo(customer *database.Customer, lang string, t *Translation) string {
+    if customer.SubscriptionLink != nil && customer.ExpireAt.After(time.Now()) {
+        return "\n\n📅 " + t.GetText(lang, "subscription_active_until") + ": " + customer.ExpireAt.Format("02.01.2006")
+    }
+    return ""
+}
+
+
 func (h Handler) StartCommandHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	ctxWithTime, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
