@@ -15,15 +15,6 @@ import (
 	"remnawave-tg-shop-bot/utils"
 )
 
-// helper для вывода даты окончания подписки
-func formatSubscriptionInfo(customer *database.Customer, lang string, t *Translation) string {
-	if customer.SubscriptionLink != nil && customer.ExpireAt.After(time.Now()) {
-		// можно добавить ключ в translations.json: "subscription_active_until": "Ваша подписка активна до"
-		return "\n\n📅 " + t.GetText(lang, "subscription_active_until") + ": " + customer.ExpireAt.Format("02.01.2006")
-	}
-	return ""
-}
-
 func (h Handler) StartCommandHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	ctxWithTime, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -107,7 +98,7 @@ func (h Handler) StartCommandHandler(ctx context.Context, b *bot.Bot, update *mo
 		ReplyMarkup: models.InlineKeyboardMarkup{
 			InlineKeyboard: inlineKeyboard,
 		},
-		Text: h.translation.GetText(langCode, "greeting") + formatSubscriptionInfo(existingCustomer, langCode, h.translation),
+		Text: h.translation.GetText(langCode, "greeting"),
 	})
 	if err != nil {
 		slog.Error("Error sending /start message", err)
@@ -136,7 +127,7 @@ func (h Handler) StartCallbackHandler(ctx context.Context, b *bot.Bot, update *m
 		ReplyMarkup: models.InlineKeyboardMarkup{
 			InlineKeyboard: inlineKeyboard,
 		},
-		Text: h.translation.GetText(langCode, "greeting") + formatSubscriptionInfo(existingCustomer, langCode, h.translation),
+		Text: h.translation.GetText(langCode, "greeting"),
 	})
 	if err != nil {
 		slog.Error("Error sending /start message", err)
